@@ -3,6 +3,8 @@
 #include <stdexcept>
 #include <algorithm>
 
+#include "platform_sockets.hpp"
+
 #ifdef _WIN32
 constexpr int InvalidSocket = static_cast<int>(INVALID_SOCKET);
 constexpr int SocketError = static_cast<int>(SOCKET_ERROR);
@@ -84,7 +86,7 @@ int UdpSocket::NumBytesAvailable() const {
   return static_cast<int>(count);
   #else
   int count = 0;
-  ioctl(fd, FIONREAD, &count);
+  ioctl(mSocket, FIONREAD, &count);
   return count;
   #endif
 }
@@ -94,13 +96,23 @@ UdpSocket::ReadResult UdpSocket::Read(unsigned numBytes) {
   result.data.resize(numBytes);
 
   sockaddr_in from;
-  int fromLength = sizeof(from);
 
+  #ifdef _WIN32
+  int fromLength = sizeof(from);
   int numRead = recvfrom(mSocket, (char*)(result.data.data()),
            static_cast<int>(numBytes), 0, (sockaddr*)(&from), &fromLength);
+  #else
+  unsigned fromLength = sizeof(from);
+  int numRead = recvfrom(mSocket, (void*)(result.data.data()),
+           numBytes, 0, (sockaddr*)(&from), &fromLength);
+  #endif
 
   result.data.resize(std::max(numRead, 0));
+  #ifdef _WIN32
   result.from.Address(ntohl(from.sin_addr.S_un.S_addr));
+  #else
+  result.from.Address(ntohl(from.sin_addr.s_addr));
+  #endif
   result.from.Port(ntohs(from.sin_port));
   return result;
 }

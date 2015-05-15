@@ -55,10 +55,6 @@ namespace MORL {
   }
 
   void Screen::Update() {
-    if(is_termresized()) {
-      getmaxyx(stdscr, mScreenHeight, mScreenWidth);
-    }
-
     auto &curScreenState = CurrentScreenState();
     curScreenState.Update();
   }

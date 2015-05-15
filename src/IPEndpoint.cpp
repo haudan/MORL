@@ -3,7 +3,6 @@
 #include <sstream>
 #include <stdexcept>
 #include <iostream>
-#include <inaddr.h>
 
 IPEndpoint::IPEndpoint(uint32_t addr, uint16_t port)
   : mAddr(addr), mPort(port)
@@ -59,7 +58,11 @@ IPEndpoint::operator std::string () const {
 IPEndpoint::operator sockaddr_in () const {
   sockaddr_in addr;
   addr.sin_family = AF_INET;
-  addr.sin_addr.S_un.S_addr = (mAddr == INADDR_ANY ? INADDR_ANY : htonl(mAddr));
+  #ifdef _WIN32
+  addr.sin_addr.S_un.S_addr = htonl(mAddr == INADDR_ANY ? INADDR_ANY : mAddr);
+  #else
+  addr.sin_addr.s_addr = htonl(mAddr == INADDR_ANY ? INADDR_ANY : mAddr);
+  #endif
   addr.sin_port = htons(mPort);
   return addr;
 }

@@ -13,8 +13,9 @@ constexpr int InvalidSocket = -1;
 constexpr int SocketError = -1;
 #endif
 
-UdpSocket::UdpSocket()
-  : mSocket(socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) {
+UdpSocket::UdpSocket(IPEndpoint const &addr)
+  : mSocket(socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)),
+    mAddr(addr) {
   #ifdef _WIN32
   if(mSocket == INVALID_SOCKET) {
     throw std::runtime_error("Creating socket failed!");
@@ -26,14 +27,29 @@ UdpSocket::UdpSocket()
   if(res != 0) {
     throw std::runtime_error("Couldn't set socket to non-blocking!");
   }
+
+  // Bind socket
+  auto const addrin = static_cast<sockaddr_in>(addr);
+  res = bind(mSocket, (const sockaddr*)&addrin, sizeof(addrin));
+  if(res == SocketError) {
+    throw std::runtime_error("Binding socket failed!");
+  }
   #else
   if(mSocket == -1) {
-  throw std::runtime_error("Creating socket failed!");
+    throw std::runtime_error("Creating socket failed!");
   }
 
+  // Enter non-blocking mode
   int res = fcntl(mSocket, F_SETFL, O_NONBLOCK);
   if(res != 0) {
     throw std::runtime_error("Couldn't set socket to non-blocking!");
+  }
+
+  // Bind socket
+  auto const addrin = static_cast<sockaddr_in>(addr);
+  res = bind(mSocket, (const sockaddr*)&addrin, sizeof(addrin));
+  if(res == SocketError) {
+    throw std::runtime_error("Binding socket failed!");
   }
   #endif
 }
@@ -55,6 +71,14 @@ UdpSocket::~UdpSocket() {
   }
 }
 
+bool UdpSocket::IsSocketValid() const {
+  return mSocket != InvalidSocket;
+}
+
+void UdpSocket::InvalidateSocket() {
+  mSocket = InvalidSocket;
+}
+
 int UdpSocket::NumBytesAvailable() const {
   #ifdef _WIN32
   u_long count = 0;
@@ -69,7 +93,7 @@ int UdpSocket::NumBytesAvailable() const {
 
 UdpSocket::ReadResult UdpSocket::Read(unsigned numBytes) {
   ReadResult result;
-  result.data.reserve(numBytes);
+  result.data.resize(numBytes);
 
   sockaddr_in from = {0};
   int fromLength = sizeof(from);
@@ -92,10 +116,6 @@ UdpSocket::ReadResult UdpSocket::ReadAll() {
   return Read(static_cast<unsigned>(avail));
 }
 
-bool UdpSocket::IsSocketValid() const {
-  return mSocket != InvalidSocket;
-}
-
-void UdpSocket::InvalidateSocket() {
-  mSocket = InvalidSocket;
+bool UdpSocket::Listen() {
+  return listen(mSocket, SOMAXCONN) != SocketError;
 }

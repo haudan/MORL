@@ -3,19 +3,18 @@
 #include <sstream>
 #include <stdexcept>
 #include <iostream>
+#include <inaddr.h>
 
 IPEndpoint::IPEndpoint(uint32_t addr, uint16_t port)
   : mAddr(addr), mPort(port)
 {}
 
+IPEndpoint::IPEndpoint(uint16_t port)
+  : mAddr(INADDR_ANY), mPort(port)
+{}
+
 IPEndpoint::IPEndpoint(std::string const &addr) {
   uint32_t ip[4] = {0};
-
-  // TODO: This can probably be done with std::stringstream
-  /*int res = std::scanf("%u.%u.%u.%u", &ip[0], &ip[1], &ip[2], &ip[3], &mPort);
-  if(res != 5) {
-    throw std::runtime_error("Couldn't parse ip address from string!");
-  }*/
 
   // Parse address
   char sep;
@@ -55,4 +54,12 @@ IPEndpoint::operator std::string () const {
   ss << ((mAddr >> 24) & 0xFF) << '.' << ((mAddr >> 16) & 0xFF) << '.'
      << ((mAddr >> 8) & 0xFF) << '.' << (mAddr & 0xFF) << ':' << mPort;
   return ss.str();
+}
+
+IPEndpoint::operator sockaddr_in () const {
+  sockaddr_in addr;
+  addr.sin_family = AF_INET;
+  addr.sin_addr.S_un.S_addr = (mAddr == INADDR_ANY ? INADDR_ANY : htonl(mAddr));
+  addr.sin_port = htons(mPort);
+  return addr;
 }

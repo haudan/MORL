@@ -12,7 +12,7 @@ public:
     IPEndpoint from;
   };
 
-  UdpSocket();
+  UdpSocket(IPEndpoint const &addr);
   UdpSocket(UdpSocket const &other) = delete;
   UdpSocket(UdpSocket && other);
   ~UdpSocket();
@@ -31,9 +31,15 @@ public:
    * Read all data on the socket
    */
   ReadResult ReadAll();
+
+  /**
+   * Set the socket to listen mode
+   */
+  bool Listen();
 private:
   bool IsSocketValid() const;
   void InvalidateSocket();
 private:
   int mSocket = -1;
+  IPEndpoint mAddr;
 };

@@ -3,6 +3,7 @@
 #include "Keyboard.hpp"
 #include "ScreenState.hpp"
 #include "SSMenu.hpp"
+#include "SSServerMenu.hpp"
 #include "Screen.hpp"
 #include "Util.hpp"
 
@@ -34,6 +35,11 @@ namespace MORL {
   private:
     bool mRunning = true;
     MORL::Keyboard mKeyboard;
+
+    #ifdef MORL_SERVER_SIDE
+    MORL::Screen mScreen{MakeUnique<MORL::SSServerMenu>(*this)};
+    #else
     MORL::Screen mScreen{MakeUnique<MORL::SSMenu>(*this)};
+    #endif
   };
 }

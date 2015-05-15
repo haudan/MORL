@@ -11,5 +11,7 @@ namespace MORL {
 
     void Update() override;
     void Draw() override;
+  private:
+    bool mRenderIpPrompt = false;
   };
 }

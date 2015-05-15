@@ -27,6 +27,20 @@ namespace MORL {
     }
 
     /**
+     * Get the width of the window
+     */
+    int Width() const {
+      return mScreenWidth;
+    }
+
+    /**
+     * Get the height of the window
+     */
+    int Height() const {
+      return mScreenHeight;
+    }
+
+    /**
      * Open a new screen, making it the current one
      */
     void GotoScreen(OwnedScreenState && screenState);

@@ -1,9 +1,7 @@
 #include "UdpSocket.hpp"
 
-#include "platform_sockets.hpp"
-
 #include <stdexcept>
-#include <inaddr.h>
+#include <algorithm>
 
 #ifdef _WIN32
 constexpr int InvalidSocket = static_cast<int>(INVALID_SOCKET);
@@ -17,7 +15,7 @@ UdpSocket::UdpSocket(IPEndpoint const &addr)
   : mSocket(socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)),
     mAddr(addr) {
   #ifdef _WIN32
-  if(mSocket == INVALID_SOCKET) {
+  if(mSocket == InvalidSocket) {
     throw std::runtime_error("Creating socket failed!");
   }
 
@@ -95,25 +93,30 @@ UdpSocket::ReadResult UdpSocket::Read(unsigned numBytes) {
   ReadResult result;
   result.data.resize(numBytes);
 
-  sockaddr_in from = {0};
+  sockaddr_in from;
   int fromLength = sizeof(from);
 
   int numRead = recvfrom(mSocket, (char*)(result.data.data()),
            static_cast<int>(numBytes), 0, (sockaddr*)(&from), &fromLength);
 
-  // TODO: Do I need to convert these from network to host endianness?
-  result.from.Address(from.sin_addr.S_un.S_addr);
-  result.from.Port(from.sin_port);
+  result.data.resize(std::max(numRead, 0));
+  result.from.Address(ntohl(from.sin_addr.S_un.S_addr));
+  result.from.Port(ntohs(from.sin_port));
   return result;
 }
 
 UdpSocket::ReadResult UdpSocket::ReadAll() {
   int avail = NumBytesAvailable();
   if(avail <= 0) {
-    return {};
+    return {{}, {}};
   }
 
   return Read(static_cast<unsigned>(avail));
+}
+
+void UdpSocket::Write(IPEndpoint const &dest, void const *dataSrc, size_t dataSize) {
+  auto addrin = static_cast<sockaddr_in>(dest);
+  sendto(mSocket, (char*)dataSrc, dataSize, 0, (sockaddr*)&addrin, sizeof(addrin));
 }
 
 bool UdpSocket::Listen() {

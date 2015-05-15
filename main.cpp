@@ -1,11 +1,9 @@
-#include <curses.h>
 #include "Game.hpp"
 
 #ifdef _WIN32
 #include <winsock2.h>
 #endif
 
-#include "Util.hpp"
 #include "UdpSocket.hpp"
 
 int main() {

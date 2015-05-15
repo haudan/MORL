@@ -32,6 +32,8 @@ public:
    */
   ReadResult ReadAll();
 
+  void Write(IPEndpoint const &dest, void const *dataSrc, size_t dataSize);
+
   /**
    * Set the socket to listen mode
    */

@@ -32,14 +32,14 @@ namespace MORL {
     /**
      * Specify that the screen isn't dirty anymore
      */
-    inline bool SetClean() {
+    inline void SetClean() {
       mIsDirty = false;
     }
 
     /**
      * Specify that the screen is dirty
      */
-    inline bool SetDirty() {
+    inline void SetDirty() {
       mIsDirty = true;
     }
   protected:

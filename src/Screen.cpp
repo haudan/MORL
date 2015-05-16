@@ -1,5 +1,5 @@
 #include "Screen.hpp"
-#include "TerminalColors.hpp"
+#include "Terminal.hpp"
 
 #include <curses.h>
 

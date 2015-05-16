@@ -1,7 +1,7 @@
 #include "SSMenu.hpp"
 
 #include "Game.hpp"
-#include "TerminalColors.hpp"
+#include "Terminal.hpp"
 #include "SSOptions.hpp"
 
 #include <curses.h>
@@ -37,13 +37,8 @@ namespace MORL {
 
     if(mRenderIpPrompt) {
       mvprintw(mGame.Screen().Height() - 1, 0, "IP: ");
-
-      echo();
-      char buf[80];
-      getstr(buf);
-      noecho();
-
-      mvprintw(mGame.Screen().Height() - 1, 0, "You entered: %s", buf);
+      auto input = ReadString();
+      mvprintw(mGame.Screen().Height() - 1, 0, "You entered: %s", input.c_str());
     }
   }
 }

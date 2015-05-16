@@ -1,7 +1,7 @@
 #include "SSOptions.hpp"
 
 #include "Game.hpp"
-#include "TerminalColors.hpp"
+#include "Terminal.hpp"
 
 #include <curses.h>
 

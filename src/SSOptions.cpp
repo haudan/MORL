@@ -1,9 +1,9 @@
+#include <curses.h>
+
 #include "SSOptions.hpp"
 
 #include "Game.hpp"
 #include "Terminal.hpp"
-
-#include <curses.h>
 
 namespace MORL {
   SSOptions::SSOptions(Game &game)

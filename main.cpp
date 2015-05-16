@@ -4,8 +4,6 @@
 #include <winsock2.h>
 #endif
 
-#include "UdpSocket.hpp"
-
 int main() {
   #ifdef _WIN32
   WSAData wsaData;

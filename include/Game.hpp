@@ -6,6 +6,9 @@
 #include "SSServerMenu.hpp"
 #include "Screen.hpp"
 #include "Util.hpp"
+#include "IPEndpoint.hpp"
+#include "UdpSocket.hpp"
+#include "NetworkSession.hpp"
 
 namespace MORL {
   class Game {
@@ -35,6 +38,7 @@ namespace MORL {
   private:
     bool mRunning = true;
     MORL::Keyboard mKeyboard;
+    NetworkSession mSession;
 
     #ifdef MORL_SERVER_SIDE
     MORL::Screen mScreen{MakeUnique<MORL::SSServerMenu>(*this)};

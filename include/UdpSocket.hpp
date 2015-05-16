@@ -32,12 +32,18 @@ public:
    */
   ReadResult ReadAll();
 
+  /**
+   * Write data to the socket!
+   */
   void Write(IPEndpoint const &dest, void const *dataSrc, size_t dataSize);
 
-  /**
-   * Set the socket to listen mode
-   */
-  bool Listen();
+  template <typename P>
+  void WritePacket(IPEndpoint const &dest, P const &packet) {
+    static_assert(std::is_trivial<P>::value, "The packet type must be trivially copyable!");
+
+    // Who knows if this works...
+    Write(dest, (void*)(&packet), sizeof(P));
+  }
 private:
   bool IsSocketValid() const;
   void InvalidateSocket();

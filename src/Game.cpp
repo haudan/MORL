@@ -3,6 +3,7 @@
 namespace MORL {
   void Game::Update() {
     mKeyboard.Update();
+    mSession.Update();
     mScreen.Update();
   }
 

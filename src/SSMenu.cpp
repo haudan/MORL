@@ -1,10 +1,10 @@
+#include <curses.h>
+
 #include "SSMenu.hpp"
 
 #include "Game.hpp"
 #include "Terminal.hpp"
 #include "SSOptions.hpp"
-
-#include <curses.h>
 
 namespace MORL {
   SSMenu::SSMenu(Game &game)
@@ -37,8 +37,11 @@ namespace MORL {
 
     if(mRenderIpPrompt) {
       mvprintw(mGame.Screen().Height() - 1, 0, "IP: ");
+      SetColor(TerminalColor::Warning);
       auto input = ReadString();
+      SetColor(TerminalColor::Default);
       mvprintw(mGame.Screen().Height() - 1, 0, "You entered: %s", input.c_str());
+      mRenderIpPrompt = false;
     }
   }
 }

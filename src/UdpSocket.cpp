@@ -130,7 +130,3 @@ void UdpSocket::Write(IPEndpoint const &dest, void const *dataSrc, size_t dataSi
   auto addrin = static_cast<sockaddr_in>(dest);
   sendto(mSocket, (char*)dataSrc, dataSize, 0, (sockaddr*)&addrin, sizeof(addrin));
 }
-
-bool UdpSocket::Listen() {
-  return listen(mSocket, SOMAXCONN) != SocketError;
-}

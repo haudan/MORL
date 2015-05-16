@@ -1,8 +1,8 @@
+#include <curses.h>
+
 #include "SSServerMenu.hpp"
 
 #include "Game.hpp"
-
-#include <curses.h>
 
 namespace MORL {
   SSServerMenu::SSServerMenu(Game &game)

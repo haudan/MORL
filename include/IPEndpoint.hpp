@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include <string>
+#include <memory>
 
 #include "platform_sockets.hpp"
 
@@ -13,6 +14,8 @@ public:
   IPEndpoint(std::string const &addr);
   IPEndpoint(IPEndpoint const &other) = default;
   ~IPEndpoint() = default;
+
+  static std::unique_ptr<IPEndpoint> TryParseString(std::string const &str);
 
   inline uint32_t Address() const {
     return mAddr;
@@ -32,6 +35,8 @@ public:
 
   operator std::string () const;
   operator sockaddr_in () const;
+
+  bool operator == (IPEndpoint const &other) const;
 private:
   uint32_t mAddr = 0;
   uint16_t mPort = 0;

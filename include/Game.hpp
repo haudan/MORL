@@ -8,7 +8,7 @@
 #include "Util.hpp"
 #include "IPEndpoint.hpp"
 #include "UdpSocket.hpp"
-#include "NetworkSession.hpp"
+#include "Network/Session.hpp"
 
 namespace MORL {
   class Game {
@@ -35,10 +35,14 @@ namespace MORL {
     inline MORL::Screen &Screen() {
       return mScreen;
     }
+
+    inline Network::Session &Session() {
+      return mSession;
+    }
   private:
     bool mRunning = true;
     MORL::Keyboard mKeyboard;
-    NetworkSession mSession;
+    Network::Session mSession{*this};
 
     #ifdef MORL_SERVER_SIDE
     MORL::Screen mScreen{MakeUnique<MORL::SSServerMenu>(*this)};

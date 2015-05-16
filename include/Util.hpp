@@ -2,6 +2,7 @@
 
 #include <memory>
 #include <functional>
+#include <unordered_map>
 
 template <typename T, typename... Args>
 std::unique_ptr<T> MakeUnique(Args && ...args) {
@@ -31,3 +32,16 @@ public:
 private:
   Janitor mJanitor;
 };
+
+struct TypeIdHelper {
+  static unsigned count;
+  TypeIdHelper() {
+    ++count;
+  }
+};
+
+template <typename T>
+unsigned TypeId() {
+  static TypeIdHelper helper;
+  return TypeIdHelper::count - 1;
+}

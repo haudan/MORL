@@ -1,5 +1,7 @@
 #include "IPEndpoint.hpp"
 
+#include "Util.hpp"
+
 #include <sstream>
 #include <stdexcept>
 #include <iostream>
@@ -11,6 +13,17 @@ IPEndpoint::IPEndpoint(uint32_t addr, uint16_t port)
 IPEndpoint::IPEndpoint(uint16_t port)
   : mAddr(INADDR_ANY), mPort(port)
 {}
+
+std::unique_ptr<IPEndpoint> IPEndpoint::TryParseString(std::string const &str) {
+  try {
+    IPEndpoint ep{str};
+    return MakeUnique<IPEndpoint>(ep);
+  }
+  // TODO: Write custom exception classes to handle this stuff properly!
+  catch(std::runtime_error const &err) {
+    return nullptr;
+  }
+}
 
 IPEndpoint::IPEndpoint(std::string const &addr) {
   uint32_t ip[4] = {0};
@@ -65,4 +78,9 @@ IPEndpoint::operator sockaddr_in () const {
   #endif
   addr.sin_port = htons(mPort);
   return addr;
+}
+
+
+bool IPEndpoint::operator == (IPEndpoint const &other) const {
+  return mAddr == other.mAddr && mPort == other.mPort;
 }

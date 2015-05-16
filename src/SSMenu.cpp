@@ -40,7 +40,27 @@ namespace MORL {
       SetColor(TerminalColor::Warning);
       auto input = ReadString();
       SetColor(TerminalColor::Default);
-      mvprintw(mGame.Screen().Height() - 1, 0, "You entered: %s", input.c_str());
+
+      auto &session = mGame.Session();
+      auto server = IPEndpoint::TryParseString(input);
+
+      if(!server) {
+        SetColor(TerminalColor::Error);
+        mvprintw(mGame.Screen().Height() - 1, 0, "Ew, what kind of IP address is that!?");
+        SetColor(TerminalColor::Default);
+      }
+      else {
+        mvprintw(mGame.Screen().Height() - 1, 0, "Connecting...");
+        session.ConnectToServer(*server, [&] {
+          mvprintw(mGame.Screen().Height() - 1, 0, "Successfully connected!");
+          // Switch screen or whatever
+        }, [&] {
+          SetColor(TerminalColor::Error);
+          mvprintw(mGame.Screen().Height() - 1, 0, "Something went wrong! The server probably timed out.");
+          SetColor(TerminalColor::Default);
+        });
+      }
+
       mRenderIpPrompt = false;
     }
   }

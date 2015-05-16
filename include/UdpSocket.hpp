@@ -1,12 +1,16 @@
 #pragma once
 
 #include "IPEndpoint.hpp"
+#include "Util.hpp"
 
 #include <cstdint>
 #include <vector>
+#include <memory>
 
 class UdpSocket {
 public:
+  using IdTagType = uint32_t;
+
   struct ReadResult {
     std::vector<uint8_t> data;
     IPEndpoint from;
@@ -32,6 +36,35 @@ public:
    */
   ReadResult ReadAll();
 
+  template <typename P>
+  bool PacketAvailable() const {
+    auto numAvailable = NumBytesAvailable();
+    return numAvailable >= static_cast<int>(sizeof(IdTagType) + sizeof(P));
+  }
+
+  template <typename P>
+  bool ReadPacket(P &out, IPEndpoint &from) {
+    auto result = ReadAll();
+    if(result.data.size() < sizeof(IdTagType) + sizeof(P)) {
+      return false;
+    }
+
+    IdTagType packetId = *((IdTagType*)result.data.data());
+    if(packetId != TypeId<P>()) {
+      return false;
+    }
+
+    memcpy(&out, result.data.data() + sizeof(IdTagType), sizeof(P));
+    from = result.from;
+    return true;
+  }
+
+  template <typename P>
+  bool ReadPacket(P &out) {
+    IPEndpoint unused;
+    return ReadPacket(out, unused);
+  }
+
   /**
    * Write data to the socket!
    */
@@ -41,8 +74,19 @@ public:
   void WritePacket(IPEndpoint const &dest, P const &packet) {
     static_assert(std::is_trivial<P>::value, "The packet type must be trivially copyable!");
 
-    // Who knows if this works...
-    Write(dest, (void*)(&packet), sizeof(P));
+    constexpr auto packetSize = sizeof(P);
+    constexpr auto idTagSize = sizeof(IdTagType);
+    constexpr auto totalDataSize = packetSize + idTagSize;
+
+    IdTagType packetId = TypeId<P>();
+
+    std::unique_ptr<uint8_t[]> dataBuf{new uint8_t[totalDataSize]};
+    memcpy(dataBuf.get(), &packetId, idTagSize);
+    memcpy(dataBuf.get() + idTagSize, (void*)(&packet), packetSize);
+
+    Write(dest, (void*)(dataBuf.get()), totalDataSize);
+
+    // I wonder if this works Kappa
   }
 private:
   bool IsSocketValid() const;

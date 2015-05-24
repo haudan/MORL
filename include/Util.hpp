@@ -33,15 +33,7 @@ private:
   Janitor mJanitor;
 };
 
-struct TypeIdHelper {
-  static unsigned count;
-  TypeIdHelper() {
-    ++count;
-  }
-};
-
 template <typename T>
-unsigned TypeId() {
-  static TypeIdHelper helper;
-  return TypeIdHelper::count - 1;
+size_t TypeId() {
+  return typeid(T).hash_code();
 }

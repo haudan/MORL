@@ -7,6 +7,8 @@
 #include <vector>
 #include <memory>
 
+#include <sstream>
+
 class UdpSocket {
 public:
   using IdTagType = uint32_t;
@@ -58,8 +60,9 @@ public:
       return false;
     }
 
-    IdTagType packetId = *((IdTagType*)result.data.data());
-    if(packetId != TypeId<P>()) {
+    IdTagType packetId = ntohl(*((IdTagType*)result.data.data()));
+    IdTagType expectedPacketId = TypeId<P>();
+    if(packetId != expectedPacketId) {
       return false;
     }
 
@@ -76,8 +79,9 @@ public:
       return false;
     }
 
-    IdTagType packetId = *((IdTagType*)result.data.data());
-    if(packetId != TypeId<P>()) {
+    IdTagType packetId = ntohl(*((IdTagType*)result.data.data()));
+    IdTagType expectedPacketId = TypeId<P>();
+    if(packetId != expectedPacketId) {
       return false;
     }
 
@@ -118,11 +122,17 @@ public:
     constexpr auto idTagSize = sizeof(IdTagType);
     constexpr auto totalDataSize = packetSize + idTagSize;
 
-    IdTagType packetId = TypeId<P>();
+    IdTagType packetId = htonl(TypeId<P>());
 
     std::unique_ptr<uint8_t[]> dataBuf{new uint8_t[totalDataSize]};
     memcpy(dataBuf.get(), &packetId, idTagSize);
     memcpy(dataBuf.get() + idTagSize, (void*)(&packet), packetSize);
+
+    /*std::stringstream ss;
+    ss << "Attemtping to send " << totalDataSize << " bytes.\n";
+    ss << idTagSize << " bytes for id tag, " << packetSize << " bytes for the packet.\n";
+    MessageBox(nullptr, ss.str().c_str(), "UdpSocket.WritePacket",
+               MB_ICONINFORMATION | MB_OK);*/
 
     Write(dest, (void*)(dataBuf.get()), totalDataSize);
   }

@@ -14,7 +14,7 @@
 namespace MORL {
   class Game {
   public:
-    Game();
+    Game() = default;
     Game(Game const &other) = delete;
     ~Game() = default;
 

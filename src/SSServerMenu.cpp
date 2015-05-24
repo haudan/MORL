@@ -32,7 +32,7 @@ namespace MORL {
     SetColor(TerminalColor::Default);
     printw("Connected clients:\n");
 
-    if(mClients) {
+    if(mClients && mClients->size() > 0) {
       SetColor(TerminalColor::Important);
 
       for(auto const &client : *mClients) {

@@ -1,3 +1,5 @@
+#include <curses.h>
+
 #include "Network/StateGameplay.hpp"
 
 #include "Network/Session.hpp"
@@ -5,6 +7,18 @@
 #include "Network/Packets/DisconnectPacket.hpp"
 
 #include <algorithm>
+#include <sstream>
+
+std::string VecDump(std::vector<uint8_t> const &vec) {
+  std::stringstream ss;
+
+  ss << "uint_8 array of size " << vec.size() << ":\n";
+  for(size_t i = 0; i < vec.size(); ++i) {
+    ss << (unsigned)vec[i] << (i < vec.size() - 1 ? ", " : "");
+  }
+
+  return ss.str();
+}
 
 namespace MORL {
   namespace Network {
@@ -38,8 +52,9 @@ namespace MORL {
     void StateGameplay::ServerUpdate() {
       UdpSocket &socket = mSession.Socket();
 
-      if(socket.NumBytesAvailable() > 0) {
-        auto result = socket.ReadAll();
+      auto numBytes = socket.NumBytesAvailable();
+      if(numBytes > 0) {
+        auto const result = socket.ReadAll();
         IPEndpoint from;
 
         // Handle connect packet
@@ -60,11 +75,11 @@ namespace MORL {
         }
 
         // Handle disconnect packet
-        if(socket.PacketAvailable<DisconnectPacket>(result)) {
+        else if(socket.PacketAvailable<DisconnectPacket>(result)) {
           DisconnectPacket disconnect;
           socket.ReadPacket(result, disconnect, from);
 
-          // Remove the client from the list if he is on there
+          // Remove the client from the list if he is on it
           auto iter = std::find(mConnectedClients.begin(), mConnectedClients.end(), from);
           if(iter != mConnectedClients.end()) {
             mConnectedClients.erase(iter);

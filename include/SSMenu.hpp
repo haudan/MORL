@@ -13,6 +13,5 @@ namespace MORL {
     void Draw() override;
   private:
     bool mRenderIpPrompt = false;
-    bool mIsConnected = false;
   };
 }

@@ -24,7 +24,7 @@ namespace MORL {
     }
 
     if(keyboard.IsKeyDown('w')) {
-      if(mIsConnected) {
+      if(mGame.Session().IsConnectedToServer()) {
         mGame.Screen().GotoScreen(MakeUnique<SSGame>(mGame));
       }
       else {
@@ -42,7 +42,7 @@ namespace MORL {
     SetColor(TerminalColor::Default);
     printw("Press 'q' to quit, 'e' for the options menu\n");
 
-    if(mIsConnected) {
+    if(mGame.Session().IsConnectedToServer()) {
       printw("Press 'w' to continue the game");
     }
     else {
@@ -67,11 +67,9 @@ namespace MORL {
         mvprintw(mGame.Screen().Height() - 1, 0, "Connecting...");
         session.PushState(Network::StateConnectToServer{session, *server, [&] {
           // Success callback
-          mIsConnected = true;
           mGame.Screen().GotoScreen(MakeUnique<SSGame>(mGame));
         }, [&](auto const &err) {
           // Failure callback
-          mIsConnected = false;
           SetColor(TerminalColor::Error);
           mvprintw(mGame.Screen().Height() - 1, 0, "Error: %s", err.c_str());
           SetColor(TerminalColor::Default);

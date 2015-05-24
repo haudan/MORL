@@ -8,7 +8,7 @@ namespace MORL {
   namespace Network {
     StateConnectToServer::StateConnectToServer(
       Session &session, IPEndpoint const &server,
-      SuccessCallback onSuccess, FailureCallback onFailure)
+      SuccessCallback const &onSuccess, FailureCallback const &onFailure)
       : SessionState(session),
         mServer(server),
         mOnSuccess(onSuccess),

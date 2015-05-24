@@ -46,6 +46,11 @@ namespace MORL {
       }
 
       template <typename S>
+      inline void PushState(S && state) {
+        mStates.push(MakeUnique<S>(std::move(state)));
+      }
+
+      template <typename S>
       inline void ReplaceState(S const &state) {
         if(mStates.size() >= 1) {
           mStates.pop();
@@ -71,9 +76,9 @@ namespace MORL {
       /**
        * Connect this client to the server
        */
-      void ConnectToServer(IPEndpoint const &serverAddr,
-                           std::function<void()> onConnect, std::function<void()> onFailure);
-      //                   These are pass-by-val on purpose
+      /*void ConnectToServer(IPEndpoint const &serverAddr,
+                           std::function<void()> const &onConnect,
+                           std::function<void()> const &onFailure);*/
     private:
       void SendDisconnectToServer();
       inline SessionState &CurrentState() {

@@ -1,6 +1,9 @@
 #pragma once
 
 #include "ScreenState.hpp"
+#include "IPEndpoint.hpp"
+
+#include <vector>
 
 namespace MORL {
   class Game;
@@ -14,5 +17,7 @@ namespace MORL {
 
     void Update() override;
     void Draw() override;
+  private:
+    std::vector<IPEndpoint> const *mClients = nullptr;
   };
 }

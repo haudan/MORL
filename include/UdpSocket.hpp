@@ -36,6 +36,9 @@ public:
    */
   ReadResult ReadAll();
 
+  /**
+   * This only checks if the sizes of the packet and the available data match!
+   */
   template <typename P>
   bool PacketAvailable() const {
     auto numAvailable = NumBytesAvailable();
@@ -43,8 +46,9 @@ public:
   }
 
   template <typename P>
-  bool ReadPacket(P &out, IPEndpoint &from) {
+  bool ReadPacket(P &out, ReadResult &outResult, IPEndpoint &from) {
     auto result = ReadAll();
+    outResult = result;
     if(result.data.size() < sizeof(IdTagType) + sizeof(P)) {
       return false;
     }
@@ -60,9 +64,22 @@ public:
   }
 
   template <typename P>
+  bool ReadPacket(P &out, ReadResult &outResult) {
+    IPEndpoint unused2;
+    return ReadPacket(out, outResult, unused2);
+  }
+
+  template <typename P>
+  bool ReadPacket(P &out, IPEndpoint &from) {
+    ReadResult unused;
+    return ReadPacket(out, unused, from);
+  }
+
+  template <typename P>
   bool ReadPacket(P &out) {
-    IPEndpoint unused;
-    return ReadPacket(out, unused);
+    ReadResult unused;
+    IPEndpoint unused2;
+    return ReadPacket(out, unused, unused2);
   }
 
   /**
@@ -85,9 +102,9 @@ public:
     memcpy(dataBuf.get() + idTagSize, (void*)(&packet), packetSize);
 
     Write(dest, (void*)(dataBuf.get()), totalDataSize);
-
-    // I wonder if this works Kappa
   }
+
+  uint16_t LocalPort() const;
 private:
   bool IsSocketValid() const;
   void InvalidateSocket();

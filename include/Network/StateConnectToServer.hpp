@@ -20,7 +20,7 @@ namespace MORL {
       static constexpr auto TimeoutMs = 5000;
 
       StateConnectToServer(Session &session, IPEndpoint const &server,
-                           SuccessCallback onSuccess, FailureCallback onFailure);
+                           SuccessCallback const &onSuccess, FailureCallback const &onFailure);
 
       StateConnectToServer(StateConnectToServer const &other) = default;
       ~StateConnectToServer() = default;

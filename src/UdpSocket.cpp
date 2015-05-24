@@ -130,3 +130,11 @@ void UdpSocket::Write(IPEndpoint const &dest, void const *dataSrc, size_t dataSi
   auto addrin = static_cast<sockaddr_in>(dest);
   sendto(mSocket, (char*)dataSrc, dataSize, 0, (sockaddr*)&addrin, sizeof(addrin));
 }
+
+uint16_t UdpSocket::LocalPort() const {
+  sockaddr_in saddr;
+  memset(&saddr, 0, sizeof(saddr));
+  int saddrSize = sizeof(saddr);
+  getsockname(mSocket, (sockaddr*)(&saddr), &saddrSize);
+  return ntohs(saddr.sin_port);
+}

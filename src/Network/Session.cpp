@@ -48,13 +48,17 @@ namespace MORL {
       CurrentState().Update();
     }
 
-    void Session::ConnectToServer(IPEndpoint const &serverAddr,
-                                  std::function<void()> onConnect, std::function<void()> onFailure) {
+    /*void Session::ConnectToServer(IPEndpoint const &serverAddr,
+                                  std::function<void()> const &onConnect,
+                                  std::function<void()> const &onFailure) {
       #ifndef MORL_SERVER_SIDE
       mStates.push(MakeUnique<StateConnectToServer>(*this, serverAddr, onConnect, onFailure));
       #else
+      (void)serverAddr;
+      (void)onConnect;
+      (void)onFailure;
       throw std::runtime_error("Tried to call ConnectToServer on a server build!");
       #endif
-    }
+    }*/
   }
 }

@@ -12,7 +12,6 @@ namespace MORL {
   class Game;
 
   namespace Network {
-
     class Session;
 
     class StateNotRunning : public SessionState {

@@ -5,6 +5,7 @@
 #include "Network/Session.hpp"
 #include "Network/Packets/ConnectPacket.hpp"
 #include "Network/Packets/DisconnectPacket.hpp"
+#include "Game.hpp"
 
 #include <algorithm>
 #include <sstream>
@@ -91,7 +92,12 @@ namespace MORL {
 
     #else
     void StateGameplay::ClientUpdate() {
-
+      auto &clientCommands = mSession.Game().ClientCommands();
+      while(!clientCommands.empty()) {
+        auto &command = clientCommands.front();
+        command->Execute(mSession.Socket(), mSession.Server());
+        clientCommands.pop();
+      }
     }
     #endif
   }

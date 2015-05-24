@@ -10,10 +10,16 @@
 #include "UdpSocket.hpp"
 #include "Network/Session.hpp"
 #include "Gameplay/Game.hpp"
+#include "Network/ClientCommand.hpp"
+
+#include <queue>
 
 namespace MORL {
   class Game {
   public:
+    using OwnedClientCommand = std::unique_ptr<Network::ClientCommand>;
+    using ClientCommandQueue = std::queue<OwnedClientCommand>;
+
     Game() = default;
     Game(Game const &other) = delete;
     ~Game() = default;
@@ -44,6 +50,17 @@ namespace MORL {
     inline Gameplay::Game &GameplayGame() {
       return mGameplayGame;
     }
+
+    #ifndef MORL_SERVER_SIDE
+    inline ClientCommandQueue &ClientCommands() {
+      return mClientCommands;
+    }
+
+    template <typename C, typename... Args>
+    inline void IssueClientCommand(Args && ... args) {
+      mClientCommands.push(MakeUnique<C>(std::forward<Args>(args)...));
+    }
+    #endif
   private:
     bool mRunning = true;
     MORL::Keyboard mKeyboard;
@@ -53,6 +70,7 @@ namespace MORL {
     MORL::Screen mScreen{MakeUnique<MORL::SSServerMenu>(*this)};
     #else
     MORL::Screen mScreen{MakeUnique<MORL::SSMenu>(*this)};
+    ClientCommandQueue mClientCommands;
     #endif
 
     Gameplay::Game mGameplayGame;

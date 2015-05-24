@@ -31,13 +31,17 @@ namespace MORL {
       using OwnedSessionState = std::unique_ptr<SessionState>;
       using SessionStateStack = std::stack<OwnedSessionState>;
 
-      Session(Game &game);
+      Session(MORL::Game &game);
       Session(Session const &) = delete;
       Session(Session && other);
       ~Session();
 
       inline UdpSocket &Socket() {
         return mSocket;
+      }
+
+      inline MORL::Game &Game() {
+        return mGame;
       }
 
       inline bool IsConnectedToServer() const {
@@ -47,6 +51,10 @@ namespace MORL {
       inline void ConnectedToServer(IPEndpoint const &server) {
         mConnectedToServer = true;
         mServer = server;
+      }
+
+      inline IPEndpoint const &Server() const {
+        return mServer;
       }
 
       template <typename S>
@@ -88,7 +96,7 @@ namespace MORL {
     private:
       // How this socket is used varies from server to client side
       UdpSocket mSocket;
-      Game &mGame;
+      MORL::Game &mGame;
       SessionStateStack mStates;
       // Only used by client
       IPEndpoint mServer;

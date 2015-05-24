@@ -3,6 +3,7 @@
 #include "SSGame.hpp"
 
 #include "Game.hpp"
+#include "Network/StateGameplay.hpp"
 
 namespace MORL {
   SSGame::SSGame(Game &game)
@@ -10,9 +11,25 @@ namespace MORL {
   {}
 
   void SSGame::Update() {
-    if(mGame.Keyboard().IsKeyDown('q')) {
+    using namespace Network;
+
+    auto const &keyboard = mGame.Keyboard();
+
+    if(keyboard.IsKeyDown('q')) {
       mGame.Screen().GoBack();
       return;
+    }
+    else if(keyboard.IsKeyDown('w')) {
+      mGame.IssueClientCommand<PlayerMoveCommand>(PlayerMovementPacket::Direction::Up);
+    }
+    else if(keyboard.IsKeyDown('a')) {
+      mGame.IssueClientCommand<PlayerMoveCommand>(PlayerMovementPacket::Direction::Left);
+    }
+    else if(keyboard.IsKeyDown('s')) {
+      mGame.IssueClientCommand<PlayerMoveCommand>(PlayerMovementPacket::Direction::Down);
+    }
+    else if(keyboard.IsKeyDown('d')) {
+      mGame.IssueClientCommand<PlayerMoveCommand>(PlayerMovementPacket::Direction::Right);
     }
 
     mGame.GameplayGame().Update();

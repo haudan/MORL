@@ -14,6 +14,8 @@ namespace MORL {
   class SSServerMenu : public ScreenState {
   public:
     SSServerMenu(Game &game);
+    SSServerMenu(SSServerMenu const &other) = default;
+    ~SSServerMenu() = default;
 
     void Update() override;
     void Draw() override;

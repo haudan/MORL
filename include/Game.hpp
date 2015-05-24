@@ -9,11 +9,12 @@
 #include "IPEndpoint.hpp"
 #include "UdpSocket.hpp"
 #include "Network/Session.hpp"
+#include "Gameplay/Game.hpp"
 
 namespace MORL {
   class Game {
   public:
-    Game() = default;
+    Game();
     Game(Game const &other) = delete;
     ~Game() = default;
 
@@ -39,6 +40,10 @@ namespace MORL {
     inline Network::Session &Session() {
       return mSession;
     }
+
+    inline Gameplay::Game &GameplayGame() {
+      return mGameplayGame;
+    }
   private:
     bool mRunning = true;
     MORL::Keyboard mKeyboard;
@@ -49,5 +54,7 @@ namespace MORL {
     #else
     MORL::Screen mScreen{MakeUnique<MORL::SSMenu>(*this)};
     #endif
+
+    Gameplay::Game mGameplayGame;
   };
 }

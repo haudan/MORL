@@ -2,6 +2,7 @@
 
 #include "Network/SessionState.hpp"
 #include "IPEndpoint.hpp"
+#include "Gameplay/Game.hpp"
 
 #include <vector>
 #include <functional>

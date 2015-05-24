@@ -5,6 +5,7 @@
 #include "Game.hpp"
 #include "Terminal.hpp"
 #include "SSOptions.hpp"
+#include "SSGame.hpp"
 #include "Network/StateConnectToServer.hpp"
 
 namespace MORL {
@@ -53,9 +54,8 @@ namespace MORL {
       else {
         mvprintw(mGame.Screen().Height() - 1, 0, "Connecting...");
         session.PushState(Network::StateConnectToServer{session, *server, [&] {
-        //session.ConnectToServer(*server, [&] {
-          mvprintw(mGame.Screen().Height() - 1, 0, "Successfully connected!");
-          // Switch screen or whatever
+          //mvprintw(mGame.Screen().Height() - 1, 0, "Successfully connected!");
+          mGame.Screen().GotoScreen(MakeUnique<SSGame>(mGame));
         }, [&] {
           SetColor(TerminalColor::Error);
           mvprintw(mGame.Screen().Height() - 1, 0, "Something went wrong! The server probably timed out.");

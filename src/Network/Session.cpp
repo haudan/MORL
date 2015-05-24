@@ -10,13 +10,13 @@
 namespace MORL {
   namespace Network {
     #ifdef MORL_SERVER_SIDE
-    Session::Session(Game &game)
+    Session::Session(MORL::Game &game)
       : mSocket(IPEndpoint{ServerSocketPort}),
         mGame(game) {
       mStates.push(MakeUnique<StateNotRunning>(*this));
     }
     #else
-    Session::Session(Game &game)
+    Session::Session(MORL::Game &game)
       : mSocket(IPEndpoint{0}),
         mGame(game) {
       mStates.push(MakeUnique<StateNotRunning>(*this));

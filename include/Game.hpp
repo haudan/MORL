@@ -51,7 +51,6 @@ namespace MORL {
       return mGameplayGame;
     }
 
-    #ifndef MORL_SERVER_SIDE
     inline ClientCommandQueue &ClientCommands() {
       return mClientCommands;
     }
@@ -60,7 +59,6 @@ namespace MORL {
     inline void IssueClientCommand(Args && ... args) {
       mClientCommands.push(MakeUnique<C>(std::forward<Args>(args)...));
     }
-    #endif
   private:
     bool mRunning = true;
     MORL::Keyboard mKeyboard;
@@ -70,9 +68,9 @@ namespace MORL {
     MORL::Screen mScreen{MakeUnique<MORL::SSServerMenu>(*this)};
     #else
     MORL::Screen mScreen{MakeUnique<MORL::SSMenu>(*this)};
-    ClientCommandQueue mClientCommands;
     #endif
 
+    ClientCommandQueue mClientCommands;
     Gameplay::Game mGameplayGame;
   };
 }

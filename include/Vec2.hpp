@@ -30,7 +30,7 @@ public:
   inline void Y(Scalar y) { mY = y; }
 
   Scalar MagnitudeSquared() const {
-    return (X * X) + (Y * Y);
+    return (mX * mX) + (mY * mY);
   }
 
   Scalar Magnitude() const {

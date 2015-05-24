@@ -135,6 +135,10 @@ uint16_t UdpSocket::LocalPort() const {
   sockaddr_in saddr;
   memset(&saddr, 0, sizeof(saddr));
   int saddrSize = sizeof(saddr);
+  #ifdef __WIN32
   getsockname(mSocket, (sockaddr*)(&saddr), &saddrSize);
+  #else
+  getsockname(mSocket, (sockaddr*)(&saddr), (socklen_t*)(&saddrSize));
+  #endif
   return ntohs(saddr.sin_port);
 }

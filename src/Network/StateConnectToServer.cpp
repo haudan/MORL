@@ -24,7 +24,8 @@ namespace MORL {
       }
       else {
         if(TimeoutExceeded()) {
-          mOnFailure();
+          // TODO: Put the actual TimeoutMs in that string
+          mOnFailure("Server didn't respond in 5 seconds");
           mSession.GoBack();
         }
 
@@ -37,6 +38,10 @@ namespace MORL {
               if(connect.serverAknowledged) {
                 mOnSuccess();
                 mSession.ReplaceState(StateGameplay{mSession});
+              }
+              else {
+                mOnFailure("Server refused connection");
+                mSession.GoBack();
               }
             }
           }

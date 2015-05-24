@@ -5,6 +5,7 @@
 
 #include <functional>
 #include <chrono>
+#include <string>
 
 namespace MORL {
   namespace Network {
@@ -13,7 +14,7 @@ namespace MORL {
     class StateConnectToServer : public SessionState {
     public:
       using SuccessCallback = std::function<void()>;
-      using FailureCallback = std::function<void()>;
+      using FailureCallback = std::function<void(std::string const &reason)>;
 
       using TimePoint = std::chrono::system_clock::time_point;
 

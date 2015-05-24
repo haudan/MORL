@@ -72,13 +72,6 @@ namespace MORL {
        * Update internal stuff, call this once a frame
        */
       void Update();
-
-      /**
-       * Connect this client to the server
-       */
-      /*void ConnectToServer(IPEndpoint const &serverAddr,
-                           std::function<void()> const &onConnect,
-                           std::function<void()> const &onFailure);*/
     private:
       void SendDisconnectToServer();
       inline SessionState &CurrentState() {

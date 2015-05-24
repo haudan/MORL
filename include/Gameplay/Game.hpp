@@ -1,11 +1,15 @@
 #pragma once
 
 #include "Gameplay/World.hpp"
+#include "FrameBuffer.hpp"
 
 namespace MORL {
   namespace Gameplay {
     class Game {
     public:
+      static constexpr int GameScreenWidth = 60;
+      static constexpr int GameScreenHeight = 25;
+
       Game() = default;
       Game(Game const &other) = default;
       ~Game() = default;
@@ -20,8 +24,10 @@ namespace MORL {
 
       void Update();
       void Draw();
+      void DrawToTerminal(int maxWidth, int maxHeight);
     private:
       Gameplay::World mWorld;
+      FrameBuffer mFrameBuffer{GameScreenWidth, GameScreenHeight};
     };
   }
 }

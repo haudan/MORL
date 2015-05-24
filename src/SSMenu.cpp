@@ -24,8 +24,13 @@ namespace MORL {
     }
 
     if(keyboard.IsKeyDown('w')) {
-      mRenderIpPrompt = true;
-      RequireRedraw();
+      if(mIsConnected) {
+        mGame.Screen().GotoScreen(MakeUnique<SSGame>(mGame));
+      }
+      else {
+        mRenderIpPrompt = true;
+        RequireRedraw();
+      }
     }
   }
 
@@ -35,7 +40,13 @@ namespace MORL {
     printw("Hey there, welcome to the main menu!\n");
     SetColor(TerminalColor::Default);
     printw("Press 'q' to quit, 'e' for the options menu\n");
-    printw("Press 'w' to connect to a server");
+
+    if(mIsConnected) {
+      printw("Press 'w' to continue the game");
+    }
+    else {
+      printw("Press 'w' to connect to a server");
+    }
 
     if(mRenderIpPrompt) {
       mvprintw(mGame.Screen().Height() - 1, 0, "IP: ");
@@ -54,11 +65,12 @@ namespace MORL {
       else {
         mvprintw(mGame.Screen().Height() - 1, 0, "Connecting...");
         session.PushState(Network::StateConnectToServer{session, *server, [&] {
-          //mvprintw(mGame.Screen().Height() - 1, 0, "Successfully connected!");
+          mIsConnected = true;
           mGame.Screen().GotoScreen(MakeUnique<SSGame>(mGame));
-        }, [&] {
+        }, [&](auto const &err) {
+          mIsConnected = false;
           SetColor(TerminalColor::Error);
-          mvprintw(mGame.Screen().Height() - 1, 0, "Something went wrong! The server probably timed out.");
+          mvprintw(mGame.Screen().Height() - 1, 0, "Error: %s", err.c_str());
           SetColor(TerminalColor::Default);
         }});
       }

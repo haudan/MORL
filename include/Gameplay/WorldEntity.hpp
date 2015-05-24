@@ -3,6 +3,8 @@
 #include "Vec2.hpp"
 
 namespace MORL {
+  class FrameBuffer;
+
   namespace Gameplay {
     class WorldEntity {
     public:
@@ -14,7 +16,7 @@ namespace MORL {
       /**
        * Draw the entity
        */
-      virtual void Draw() const = 0;
+      virtual void Draw(FrameBuffer &frameBuffer) const = 0;
 
       inline Vec2i const &Position() const {
         return mPosition;

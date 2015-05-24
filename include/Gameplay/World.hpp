@@ -7,6 +7,8 @@
 #include <algorithm>
 
 namespace MORL {
+  class FrameBuffer;
+
   namespace Gameplay {
     class World {
     public:
@@ -41,9 +43,9 @@ namespace MORL {
       void Update();
 
       /**
-       * Draw the world
+       * Draw the world to the framebuffer
        */
-      void Draw() const;
+      void Draw(FrameBuffer &frameBuffer) const;
     private:
       WorldEntityContainer mEntities;
     };

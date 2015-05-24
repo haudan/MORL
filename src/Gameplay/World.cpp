@@ -2,6 +2,8 @@
 
 #include "Gameplay/World.hpp"
 
+#include "FrameBuffer.hpp"
+
 namespace MORL {
   namespace Gameplay {
     void World::RemoveEntity(WorldEntity *entity) {
@@ -19,9 +21,9 @@ namespace MORL {
       }
     }
 
-    void World::Draw() const {
+    void World::Draw(FrameBuffer &frameBuffer) const {
       for(auto const &entity : mEntities) {
-        entity->Draw();
+        entity->Draw(frameBuffer);
       }
     }
   }

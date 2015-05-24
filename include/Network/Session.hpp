@@ -40,6 +40,15 @@ namespace MORL {
         return mSocket;
       }
 
+      inline bool IsConnectedToServer() const {
+        return mConnectedToServer;
+      }
+
+      inline void ConnectedToServer(IPEndpoint const &server) {
+        mConnectedToServer = true;
+        mServer = server;
+      }
+
       template <typename S>
       inline void PushState(S const &state) {
         mStates.push(MakeUnique<S>(state));
@@ -73,7 +82,6 @@ namespace MORL {
        */
       void Update();
     private:
-      void SendDisconnectToServer();
       inline SessionState &CurrentState() {
         return *(mStates.top().get());
       }
@@ -82,6 +90,10 @@ namespace MORL {
       UdpSocket mSocket;
       Game &mGame;
       SessionStateStack mStates;
+      // Only used by client
+      IPEndpoint mServer;
+      // Only used by client
+      bool mConnectedToServer;
     };
   }
 }

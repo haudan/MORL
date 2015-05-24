@@ -46,6 +46,29 @@ public:
   }
 
   template <typename P>
+  bool PacketAvailable(ReadResult const &result) const {
+    P p;
+    IPEndpoint ep;
+    return ReadPacket(result, p, ep);
+  }
+
+  template <typename P>
+  bool ReadPacket(ReadResult const &result, P &out, IPEndpoint &from) const {
+    if(result.data.size() < sizeof(IdTagType) + sizeof(P)) {
+      return false;
+    }
+
+    IdTagType packetId = *((IdTagType*)result.data.data());
+    if(packetId != TypeId<P>()) {
+      return false;
+    }
+
+    memcpy(&out, result.data.data() + sizeof(IdTagType), sizeof(P));
+    from = result.from;
+    return true;
+  }
+
+  template <typename P>
   bool ReadPacket(P &out, ReadResult &outResult, IPEndpoint &from) {
     auto result = ReadAll();
     outResult = result;

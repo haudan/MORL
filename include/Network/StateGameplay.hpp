@@ -36,6 +36,7 @@ namespace MORL {
       void ClientUpdate();
       #endif
     private:
+      bool mWasMoved = false;
       #ifdef MORL_SERVER_SIDE
       std::vector<IPEndpoint> mConnectedClients;
       NumClientsChangeCallback mNumClientsChangeCallback = [](auto&){};

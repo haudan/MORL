@@ -1,9 +1,9 @@
 #include "Network/Session.hpp"
 
-#include "Util.hpp"
 #include "Game.hpp"
 
 #include "Network/StateConnectToServer.hpp"
+#include "Network/Packets/DisconnectPacket.hpp"
 
 #include <memory>
 
@@ -29,7 +29,9 @@ namespace MORL {
     { }
 
     Session::~Session() {
-      SendDisconnectToServer();
+      if(mConnectedToServer) {
+        mSocket.WritePacket(mServer, DisconnectPacket{});
+      }
     }
 
     void Session::GoBack() {
@@ -38,10 +40,6 @@ namespace MORL {
       }
 
       mStates.pop();
-    }
-
-    void Session::SendDisconnectToServer() {
-      // TODO: implement
     }
 
     void Session::Update() {

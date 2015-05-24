@@ -36,6 +36,7 @@ namespace MORL {
 
   void SSMenu::Draw() {
     clear();
+    printw("Local port %d\n", mGame.Session().Socket().LocalPort());
     SetColor(TerminalColor::HeroText);
     printw("Hey there, welcome to the main menu!\n");
     SetColor(TerminalColor::Default);
@@ -65,9 +66,11 @@ namespace MORL {
       else {
         mvprintw(mGame.Screen().Height() - 1, 0, "Connecting...");
         session.PushState(Network::StateConnectToServer{session, *server, [&] {
+          // Success callback
           mIsConnected = true;
           mGame.Screen().GotoScreen(MakeUnique<SSGame>(mGame));
         }, [&](auto const &err) {
+          // Failure callback
           mIsConnected = false;
           SetColor(TerminalColor::Error);
           mvprintw(mGame.Screen().Height() - 1, 0, "Error: %s", err.c_str());

@@ -2,6 +2,7 @@
 
 #include "Network/Session.hpp"
 #include "Network/Packets/ConnectPacket.hpp"
+#include "Network/Packets/DisconnectPacket.hpp"
 
 #include <algorithm>
 
@@ -15,12 +16,14 @@ namespace MORL {
     StateGameplay::StateGameplay(StateGameplay && other)
       : SessionState(other.mSession),
         mConnectedClients(std::move(other.mConnectedClients)),
-        mNumClientsChangeCallback(other.mNumClientsChangeCallback)
-    {}
+        mNumClientsChangeCallback(other.mNumClientsChangeCallback) {
+      other.mWasMoved = true;
+    }
     #else
     StateGameplay::StateGameplay(StateGameplay && other)
-      : SessionState(other.mSession)
-    {}
+      : SessionState(other.mSession) {
+      other.mWasMoved = true;
+    }
     #endif
 
     void StateGameplay::Update() {
@@ -34,13 +37,15 @@ namespace MORL {
     #ifdef MORL_SERVER_SIDE
     void StateGameplay::ServerUpdate() {
       UdpSocket &socket = mSession.Socket();
-      UdpSocket::ReadResult result;
-      IPEndpoint from;
 
-      // Might want to get rid of the stack frame
-      { // Handle connect packet
-        ConnectPacket connect;
-        if(socket.ReadPacket(connect, result, from)) {
+      if(socket.NumBytesAvailable() > 0) {
+        auto result = socket.ReadAll();
+        IPEndpoint from;
+
+        // Handle connect packet
+        if(socket.PacketAvailable<ConnectPacket>(result)) {
+          ConnectPacket connect;
+          socket.ReadPacket(result, connect, from);
           auto iter = std::find(mConnectedClients.begin(), mConnectedClients.end(), from);
           if(iter != mConnectedClients.end()) {
             // Client is already connected, so we answer with false!
@@ -50,6 +55,19 @@ namespace MORL {
             // Client is new, so we accept!
             mConnectedClients.push_back(from);
             socket.WritePacket(from, ConnectPacket{true});
+            mNumClientsChangeCallback(mConnectedClients);
+          }
+        }
+
+        // Handle disconnect packet
+        if(socket.PacketAvailable<DisconnectPacket>(result)) {
+          DisconnectPacket disconnect;
+          socket.ReadPacket(result, disconnect, from);
+
+          // Remove the client from the list if he is on there
+          auto iter = std::find(mConnectedClients.begin(), mConnectedClients.end(), from);
+          if(iter != mConnectedClients.end()) {
+            mConnectedClients.erase(iter);
             mNumClientsChangeCallback(mConnectedClients);
           }
         }

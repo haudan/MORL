@@ -25,7 +25,7 @@ namespace MORL {
       else {
         if(TimeoutExceeded()) {
           // TODO: Put the actual TimeoutMs in that string
-          mOnFailure("Server didn't respond in 5 seconds");
+          mOnFailure("Server didn't respond within 5 seconds");
           mSession.GoBack();
         }
 
@@ -36,8 +36,9 @@ namespace MORL {
           if(mSession.Socket().ReadPacket(connect, from)) {
             if(from == mServer) {
               if(connect.serverAknowledged) {
+                mSession.ConnectedToServer(mServer);
                 mOnSuccess();
-                mSession.ReplaceState(StateGameplay{mSession});
+                mSession.ReplaceState(std::move(StateGameplay{mSession}));
               }
               else {
                 mOnFailure("Server refused connection");

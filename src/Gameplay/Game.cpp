@@ -25,15 +25,36 @@ namespace MORL {
     }
 
     #ifndef MORL_SERVER_SIDE
-    void Game::LocalPlayerUpdate(Network::PlayerUpdatePacket &updatePacket) {
+    void Game::LocalPlayerUpdate(Network::PlayerUpdatePacket const &updatePacket) {
       Vec2i newPos{int(ntohl(updatePacket.newX)), int(ntohl(updatePacket.newY))};
 
-      if(!mLocalPlayer) {
-        mLocalPlayer.reset(new Player{updatePacket.name, newPos});
-        mWorld.AddEntity<PlayerEntity>(*mLocalPlayer);
+      if(!DoesLocalPlayerExist()) {
+        // TODO: The below 2 lines probably won't work consistently
+        mConnectedPlayers.push_back({updatePacket.name, newPos});
+        mLocalPlayer = &mConnectedPlayers[mConnectedPlayers.size() - 1];
+        auto id = mWorld.AddEntity<PlayerEntity>(*mLocalPlayer);
+        mLocalPlayerEntity = static_cast<PlayerEntity*>(mWorld.GetEntity(id));
       }
       else {
         mLocalPlayer->Position(newPos);
+      }
+    }
+
+    void Game::LocalEntityEvent(Network::EntityEventPacket const &eventPacket) {
+      using EventType = Network::EntityEventPacket::Type;
+      using EntityType = Gameplay::WorldEntityType;
+
+      Vec2i entityPos{int(ntohl(eventPacket.data.entityX)), int(ntohl(eventPacket.data.entityY))};
+
+      switch(eventPacket.type) {
+        case EventType::NewEntity:
+        {
+          switch(eventPacket.data.entityType) {
+            case EntityType::Player:
+              //mWorld.AddEntity
+              break;
+          }
+        }
       }
     }
     #endif

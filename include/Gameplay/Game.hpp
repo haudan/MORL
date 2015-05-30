@@ -2,9 +2,12 @@
 
 #include "Gameplay/World.hpp"
 #include "Gameplay/Player.hpp"
+#include "Gameplay/PlayerEntity.hpp"
 #include "FrameBuffer.hpp"
+#include "IPEndpoint.hpp"
 
 #include "Network/Packets/PlayerUpdatePacket.hpp"
+#include "Network/Packets/EntityEventPacket.hpp"
 
 namespace MORL {
   namespace Gameplay {
@@ -12,6 +15,12 @@ namespace MORL {
     public:
       static constexpr int GameScreenWidth = 60;
       static constexpr int GameScreenHeight = 25;
+
+      #ifdef MORL_SERVER_SIDE
+      using ConnectedPlayersContainer = std::unordered_map<IPEndpoint, Player>;
+      #else
+      using ConnectedPlayersContainer = std::vector<Player>;
+      #endif
 
       Game() = default;
       Game(Game const &other) = default;
@@ -25,16 +34,42 @@ namespace MORL {
         return mWorld;
       }
 
-      #ifndef MORL_SERVER_SIDE
-      inline Player const *LocalPlayer() const {
-        return mLocalPlayer.get();
+      #ifdef MORL_SERVER_SIDE
+      inline ConnectedPlayersContainer const &ConnectedPlayers() const {
+        return mConnectedPlayers;
       }
 
-      inline bool DoesLocalPlayerExist() {
+      inline void AddConnectedPlayer(IPEndpoint const &addr, Player const &player) {
+        mConnectedPlayers.emplace(addr, player);
+      }
+
+      inline void RemoveConnectedPlayer(IPEndpoint const &addr) {
+        auto iter = mConnectedPlayers.find(addr);
+        if(iter != mConnectedPlayers.end()) {
+          mConnectedPlayers.erase(iter);
+        }
+      }
+
+      inline Player* GetConnectedPlayer(IPEndpoint const &addr) {
+        auto iter = mConnectedPlayers.find(addr);
+        if(iter == mConnectedPlayers.end()) {
+          return nullptr;
+        }
+
+        return &iter->second;
+      }
+      #else
+      inline Player *LocalPlayer() {
+        return mLocalPlayer;
+      }
+
+      inline bool DoesLocalPlayerExist() const {
         return mLocalPlayer != nullptr;
       }
 
-      void LocalPlayerUpdate(Network::PlayerUpdatePacket &updatePacket);
+      void LocalPlayerUpdate(Network::PlayerUpdatePacket const &updatePacket);
+
+      void LocalEntityEvent(Network::EntityEventPacket const &eventPacket);
       #endif
 
       void Update();
@@ -43,10 +78,12 @@ namespace MORL {
     private:
       Gameplay::World mWorld;
       FrameBuffer mFrameBuffer{GameScreenWidth, GameScreenHeight};
+      ConnectedPlayersContainer mConnectedPlayers;
       #ifdef MORL_SERVER_SIDE
       #else
-      // Self
-      std::unique_ptr<Player> mLocalPlayer;
+      // Local player
+      Player *mLocalPlayer = nullptr;
+      PlayerEntity *mLocalPlayerEntity = nullptr;
       #endif
     };
   }

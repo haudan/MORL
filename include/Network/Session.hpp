@@ -100,7 +100,7 @@ namespace MORL {
       // Only used by client
       IPEndpoint mServer;
       // Only used by client
-      bool mConnectedToServer;
+      bool mConnectedToServer = false;
     };
   }
 }

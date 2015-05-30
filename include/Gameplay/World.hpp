@@ -3,7 +3,7 @@
 #include "Gameplay/WorldEntity.hpp"
 #include "Util.hpp"
 
-#include <vector>
+#include <unordered_map>
 #include <algorithm>
 
 namespace MORL {
@@ -13,7 +13,8 @@ namespace MORL {
     class World {
     public:
       using OwnedWorldEntity = std::unique_ptr<WorldEntity>;
-      using WorldEntityContainer = std::vector<OwnedWorldEntity>;
+      using WorldEntityId = uint32_t;
+      using WorldEntityContainer = std::unordered_map<WorldEntityId, OwnedWorldEntity>;
 
       World() = default;
       World(World const &other) = default;
@@ -22,20 +23,28 @@ namespace MORL {
 
       /**
        * Add a new entity to the world
-       * @return WorldEntity* A pointer to the new entity
+       * @return WorldEntityId The id for the new entity
        */
       template <typename E, typename ...Args>
-      inline WorldEntity *AddEntity(Args && ... args) {
+      inline WorldEntityId AddEntity(Args && ... args) {
         auto owned = MakeUnique<E>(std::forward<Args>(args)...);
-        mEntities.push_back(std::move(owned));
-        return owned.get();
+        mEntities.emplace(mCurEntityId, std::move(owned));
+        return mCurEntityId++;
       }
 
       /**
        * Remove the entity from the world
        * @param WorldEntity* entity The world to remove
        */
-      void RemoveEntity(WorldEntity *entity);
+      void RemoveEntity(WorldEntityId entityId);
+
+      /**
+       * Return the entity with the specified id
+       * @param WorldEntityId entityId The entity id
+       * @return WorldEntity* A pointer to the entity, nullptr if no entity
+       * with the specified id was found
+       */
+      WorldEntity *GetEntity(WorldEntityId entityId) const;
 
       /**
        * Update the world
@@ -47,6 +56,7 @@ namespace MORL {
        */
       void Draw(FrameBuffer &frameBuffer) const;
     private:
+      WorldEntityId mCurEntityId = 0;
       WorldEntityContainer mEntities;
     };
   }

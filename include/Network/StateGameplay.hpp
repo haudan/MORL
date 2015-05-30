@@ -2,7 +2,7 @@
 
 #include "Network/SessionState.hpp"
 #include "IPEndpoint.hpp"
-#include "Gameplay/Game.hpp"
+#include "Game.hpp"
 #include "Gameplay/Player.hpp"
 #include "Network/Session.hpp"
 
@@ -12,6 +12,10 @@
 class UdpSocket;
 
 namespace MORL {
+  namespace Gameplay {
+    class Game;
+  }
+
   namespace Network {
     class StateGameplay : public SessionState {
     public:
@@ -38,14 +42,18 @@ namespace MORL {
 
       #ifdef MORL_SERVER_SIDE
       void ServerUpdate();
+
       void SendPlayerUpdate(IPEndpoint const &to);
+
+      inline Gameplay::Game &GameplayGame() {
+        return mSession.Game().GameplayGame();
+      }
       #else
       void ClientUpdate();
       #endif
     private:
       bool mWasMoved = false;
       #ifdef MORL_SERVER_SIDE
-      std::unordered_map<IPEndpoint, Gameplay::Player> mConnectedClients;
       NumClientsChangeCallback mNumClientsChangeCallback = [](auto&){};
       #else
 

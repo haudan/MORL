@@ -15,7 +15,7 @@ namespace MORL {
 
     void PlayerEntity::Draw(FrameBuffer &frameBuffer) const {
       frameBuffer.SetCharAt(mPosition.X(), mPosition.Y(), '@');
-      frameBuffer.Text(mPosition.X(), mPosition.Y() - 1, mPlayer.Name());
+      frameBuffer.Text(mPosition.X(), mPosition.Y() + 1, mPlayer.Name());
     }
   }
 }

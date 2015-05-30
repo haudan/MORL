@@ -1,29 +1,34 @@
-#include <curses.h>
-
 #include "Gameplay/World.hpp"
 
 #include "FrameBuffer.hpp"
 
 namespace MORL {
   namespace Gameplay {
-    void World::RemoveEntity(WorldEntity *entity) {
-      auto iter = std::find_if(mEntities.begin(), mEntities.end(), [=](auto const &ent) {
-        return ent.get() == entity;
-      });
+    void World::RemoveEntity(WorldEntityId entityId) {
+      auto iter = mEntities.find(entityId);
       if(iter != mEntities.end()) {
         mEntities.erase(iter);
       }
     }
 
+    WorldEntity *World::GetEntity(WorldEntityId entityId) const {
+      auto iter = mEntities.find(entityId);
+      if(iter == mEntities.end()) {
+        return nullptr;
+      }
+
+      return iter->second.get();
+    }
+
     void World::Update() {
       for(auto &entity : mEntities) {
-        entity->Update();
+        entity.second->Update();
       }
     }
 
     void World::Draw(FrameBuffer &frameBuffer) const {
       for(auto const &entity : mEntities) {
-        entity->Draw(frameBuffer);
+        entity.second->Draw(frameBuffer);
       }
     }
   }

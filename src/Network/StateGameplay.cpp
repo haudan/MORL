@@ -74,7 +74,7 @@ namespace MORL {
         else if(socket.PacketAvailable<DisconnectPacket>(result)) {
           DisconnectPacket disconnect;
           socket.ReadPacket(result, disconnect, from);
-
+          SendPlayerDisconnectToAll(from);
           // Remove the client from the list if he is on it
           GameplayGame().RemoveConnectedPlayer(from);
           mNumClientsChangeCallback(GameplayGame().ConnectedPlayers());
@@ -96,16 +96,19 @@ namespace MORL {
       }
     }
 
+    size_t StateGameplay::PlayerIndex(IPEndpoint const &player) {
+      auto iter = GameplayGame().ConnectedPlayers().find(player);
+      size_t dist = std::distance(GameplayGame().ConnectedPlayers().begin(), iter);
+      return dist;
+    }
+
     void StateGameplay::SendPlayerUpdate(IPEndpoint const &forPlayer, IPEndpoint const &to) {
       auto *player = GameplayGame().GetConnectedPlayer(forPlayer);
       if(player) {
-        uint8_t isMe = (forPlayer == to ? 1 : 0);
-        auto iter = GameplayGame().ConnectedPlayers().find(forPlayer);
-        auto id = std::distance(GameplayGame().ConnectedPlayers().begin(), iter);
-        // Handle the movement and send back the new position
         PlayerUpdatePacket update;
-        update.isMe = isMe;
-        update.playerId = static_cast<uint32_t>(id);
+        update.isMe = (forPlayer == to ? 1 : 0);
+        auto id = PlayerIndex(forPlayer);
+        update.playerId = htonl(static_cast<uint32_t>(id));
         auto const &pos = player->Position();
         update.newX = htonl(pos.X());
         update.newY = htonl(pos.Y());
@@ -130,6 +133,15 @@ namespace MORL {
       }
     }
 
+    void StateGameplay::SendPlayerDisconnectToAll(IPEndpoint const &disconnectedPlayer) {
+      for(auto &player : GameplayGame().ConnectedPlayers()) {
+        if(player.first != disconnectedPlayer) {
+          uint32_t discPlayerId = static_cast<uint32_t>(PlayerIndex(disconnectedPlayer));
+          Socket().WritePacket<DisconnectPacket>(player.first, {discPlayerId});
+        }
+      }
+    }
+
     #else
     void StateGameplay::ClientUpdate() {
       using namespace Gameplay;
@@ -145,14 +157,21 @@ namespace MORL {
         if(socket.PacketAvailable<PlayerUpdatePacket>(result)) {
           PlayerUpdatePacket update;
           socket.ReadPacket(result, update, from);
-          mSession.Game().GameplayGame().LocalPlayerUpdate(update);
+          GameplayGame().LocalPlayerUpdate(update);
         }
 
         // Handle entity event packet
-        if(socket.PacketAvailable<EntityEventPacket>()) {
+        else if(socket.PacketAvailable<EntityEventPacket>(result)) {
           EntityEventPacket event;
           socket.ReadPacket(result, event, from);
-          mSession.Game().GameplayGame().LocalEntityEvent(event);
+          GameplayGame().LocalEntityEvent(event);
+        }
+
+        // Handle disconnect packet
+        else if(socket.PacketAvailable<DisconnectPacket>(result)) {
+          DisconnectPacket disconnect;
+          socket.ReadPacket(result, disconnect, from);
+          GameplayGame().DisconnectPlayer(disconnect);
         }
       }
 

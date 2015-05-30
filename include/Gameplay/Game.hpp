@@ -8,6 +8,7 @@
 
 #include "Network/Packets/PlayerUpdatePacket.hpp"
 #include "Network/Packets/EntityEventPacket.hpp"
+#include "Network/Packets/DisconnectPacket.hpp"
 
 namespace MORL {
   namespace Gameplay {
@@ -70,6 +71,8 @@ namespace MORL {
       void LocalPlayerUpdate(Network::PlayerUpdatePacket const &updatePacket);
 
       void LocalEntityEvent(Network::EntityEventPacket const &eventPacket);
+
+      void DisconnectPlayer(Network::DisconnectPacket const &discPacket);
       #endif
 
       void Update();

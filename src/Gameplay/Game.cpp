@@ -2,6 +2,8 @@
 
 #include "Gameplay/Game.hpp"
 
+#include <sstream>
+
 namespace MORL {
   namespace Gameplay {
     void Game::Update() {
@@ -45,6 +47,9 @@ namespace MORL {
           // Create a player entity for them, then!
           mConnectedPlayers[playerId] = {updatePacket.name, newPos};
           mWorld.AddEntity<PlayerEntity>(mConnectedPlayers[playerId]);
+          std::stringstream ss;
+          ss << "Spieler mit ID " << playerId << " hinzugefügt.";
+          MessageBox(nullptr, ss.str().c_str(), "", 0);
         }
         else {
           mConnectedPlayers[playerId] = {updatePacket.name, newPos};
@@ -66,6 +71,26 @@ namespace MORL {
               //mWorld.AddEntity
               break;
           }
+        }
+      }
+    }
+
+    void Game::DisconnectPlayer(Network::DisconnectPacket const &discPacket) {
+      uint32_t playerId = discPacket.playerId;
+
+      std::stringstream ss;
+      ss << "Spieler mit ID " << playerId << " hat das Spiel verlassen.";
+      MessageBox(nullptr, ss.str().c_str(), "", 0);
+
+      auto iter = mConnectedPlayers.find(playerId);
+      if(iter != mConnectedPlayers.end()) {
+        // Remove player entity
+        Player &player = (*iter).second;
+        mWorld.RemoveEntity(mWorld.FindEntity(player.PlayerEntity()));
+
+        // Remove player from connected players list
+        if(iter != mConnectedPlayers.end()) {
+          mConnectedPlayers.erase(iter);
         }
       }
     }

@@ -7,10 +7,12 @@
 
 namespace MORL {
   namespace Gameplay {
+    class PlayerEntity;
+
     class Player {
     public:
       Player() = default;
-      Player(Player const &other) = default;
+      Player(Player const &other) = delete;
       Player(std::string const &name);
       Player(std::string const &name, Vec2i const &position);
       ~Player() = default;
@@ -31,6 +33,14 @@ namespace MORL {
         mName = name;
       }
 
+      inline Gameplay::PlayerEntity *PlayerEntity() {
+        return mPlayerEntity;
+      }
+
+      inline void PlayerEntity(Gameplay::PlayerEntity *playerEntity) {
+        mPlayerEntity = playerEntity;
+      }
+
       /**
        * Make the player move in the desired direction
        *
@@ -42,6 +52,7 @@ namespace MORL {
       Vec2i mPosition;
       // Name
       std::string mName;
+      Gameplay::PlayerEntity *mPlayerEntity = nullptr;
     };
   }
 }

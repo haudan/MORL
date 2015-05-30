@@ -3,7 +3,7 @@
 namespace MORL {
   namespace Network {
     struct DisconnectPacket {
-      // Really empty packet
+      uint32_t playerId; // Only used by server
     };
   }
 }

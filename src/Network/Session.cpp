@@ -30,7 +30,7 @@ namespace MORL {
 
     Session::~Session() {
       if(mConnectedToServer) {
-        mSocket.WritePacket(mServer, DisconnectPacket{});
+        mSocket.WritePacket(mServer, DisconnectPacket{0});
       }
     }
 

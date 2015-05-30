@@ -6,8 +6,13 @@
 namespace MORL {
   namespace Gameplay {
     PlayerEntity::PlayerEntity(Player &player)
-      : mPlayer(player)
-    {}
+      : mPlayer(player) {
+      player.PlayerEntity(this);
+    }
+
+    PlayerEntity::~PlayerEntity() {
+      //mPlayer.PlayerEntity(nullptr);
+    }
 
     void PlayerEntity::Update() {
       mPosition = mPlayer.Position();

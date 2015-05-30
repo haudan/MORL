@@ -43,6 +43,8 @@ namespace MORL {
       #ifdef MORL_SERVER_SIDE
       void ServerUpdate();
 
+      size_t PlayerIndex(IPEndpoint const &player);
+
       void SendPlayerUpdate(IPEndpoint const &forPlayer, IPEndpoint const &to);
       inline void SendPlayerUpdate(IPEndpoint const &to) {
         SendPlayerUpdate(to, to);
@@ -52,18 +54,18 @@ namespace MORL {
 
       void SendPlayerDataToAll(IPEndpoint const &newPlayer);
 
-      inline Gameplay::Game &GameplayGame() {
-        return mSession.Game().GameplayGame();
-      }
+      void SendPlayerDisconnectToAll(IPEndpoint const &disconnectedPlayer);
       #else
       void ClientUpdate();
       #endif
+      inline Gameplay::Game &GameplayGame() {
+        return mSession.Game().GameplayGame();
+      }
     private:
       bool mWasMoved = false;
       #ifdef MORL_SERVER_SIDE
       NumClientsChangeCallback mNumClientsChangeCallback = [](auto&){};
       #else
-
       #endif
     };
   }

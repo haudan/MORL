@@ -31,5 +31,15 @@ namespace MORL {
         entity.second->Draw(frameBuffer);
       }
     }
+
+    World::WorldEntityId World::FindEntity(WorldEntity const *entity) {
+      for(auto &ent : mEntities) {
+        if(ent.second.get() == entity) {
+          return ent.first;
+        }
+      }
+
+      return static_cast<uint32_t>(-1);
+    }
   }
 }

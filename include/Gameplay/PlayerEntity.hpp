@@ -11,7 +11,7 @@ namespace MORL {
       PlayerEntity() = delete;
       PlayerEntity(PlayerEntity const &other) = default;
       PlayerEntity(Player &player);
-      ~PlayerEntity() = default;
+      ~PlayerEntity();
 
       void Update() override;
       void Draw(FrameBuffer &frameBuffer) const override;

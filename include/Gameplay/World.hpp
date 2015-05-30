@@ -46,6 +46,8 @@ namespace MORL {
        */
       WorldEntity *GetEntity(WorldEntityId entityId) const;
 
+      WorldEntityId FindEntity(WorldEntity const *entity);
+
       /**
        * Update the world
        */

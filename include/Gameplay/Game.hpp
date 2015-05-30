@@ -19,7 +19,7 @@ namespace MORL {
       #ifdef MORL_SERVER_SIDE
       using ConnectedPlayersContainer = std::unordered_map<IPEndpoint, Player>;
       #else
-      using ConnectedPlayersContainer = std::vector<Player>;
+      using ConnectedPlayersContainer = std::unordered_map<size_t, Player>;
       #endif
 
       Game() = default;
@@ -60,12 +60,12 @@ namespace MORL {
       }
       #else
       inline Player *LocalPlayer() {
-        return mLocalPlayer;
+        return mLocalPlayer.get();
       }
 
-      inline bool DoesLocalPlayerExist() const {
+      /*inline bool DoesLocalPlayerExist() const {
         return mLocalPlayer != nullptr;
-      }
+      }*/
 
       void LocalPlayerUpdate(Network::PlayerUpdatePacket const &updatePacket);
 
@@ -82,8 +82,10 @@ namespace MORL {
       #ifdef MORL_SERVER_SIDE
       #else
       // Local player
-      Player *mLocalPlayer = nullptr;
+      //Player *mLocalPlayer = nullptr;
+      std::unique_ptr<Player> mLocalPlayer;
       PlayerEntity *mLocalPlayerEntity = nullptr;
+      //std::unique_ptr<PlayerEntity> mLocalPlayerEntity;
       #endif
     };
   }

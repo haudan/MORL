@@ -1,9 +1,6 @@
 #include <curses.h>
 
 #include "Gameplay/Game.hpp"
-#include "Gameplay/PlayerEntity.hpp"
-
-#include "platform_sockets.hpp"
 
 namespace MORL {
   namespace Gameplay {
@@ -27,16 +24,31 @@ namespace MORL {
     #ifndef MORL_SERVER_SIDE
     void Game::LocalPlayerUpdate(Network::PlayerUpdatePacket const &updatePacket) {
       Vec2i newPos{int(ntohl(updatePacket.newX)), int(ntohl(updatePacket.newY))};
+      uint32_t playerId = ntohl(updatePacket.playerId);
+      bool isMe = updatePacket.isMe;
 
-      if(!DoesLocalPlayerExist()) {
-        // TODO: The below 2 lines probably won't work consistently
-        mConnectedPlayers.push_back({updatePacket.name, newPos});
-        mLocalPlayer = &mConnectedPlayers[mConnectedPlayers.size() - 1];
-        auto id = mWorld.AddEntity<PlayerEntity>(*mLocalPlayer);
-        mLocalPlayerEntity = static_cast<PlayerEntity*>(mWorld.GetEntity(id));
+      if(isMe) {
+        if(!mLocalPlayer) {
+          mLocalPlayer.reset(new Player{updatePacket.name, newPos});
+          auto entityId = mWorld.AddEntity<PlayerEntity>(*mLocalPlayer);
+          mLocalPlayerEntity = static_cast<PlayerEntity*>(mWorld.GetEntity(entityId));
+        }
+        else {
+          mLocalPlayer->Name(updatePacket.name);
+          mLocalPlayer->Position(newPos);
+        }
       }
       else {
-        mLocalPlayer->Position(newPos);
+        // Is this player new to me?
+        auto iter = mConnectedPlayers.find(playerId);
+        if(iter == mConnectedPlayers.end()) {
+          // Create a player entity for them, then!
+          mConnectedPlayers[playerId] = {updatePacket.name, newPos};
+          mWorld.AddEntity<PlayerEntity>(mConnectedPlayers[playerId]);
+        }
+        else {
+          mConnectedPlayers[playerId] = {updatePacket.name, newPos};
+        }
       }
     }
 

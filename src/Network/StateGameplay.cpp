@@ -57,11 +57,15 @@ namespace MORL {
           else {
             // Client is new, so we accept!
             Player newPlayer{"SomeName"};
-            //mConnectedClients.emplace(from, newPlayer);
+            // Send list of all current players to the new one
+            SendPlayerListing(from);
+            // Add new player to the list of players
             GameplayGame().AddConnectedPlayer(from, newPlayer);
             GameplayGame().World().AddEntity<PlayerEntity>(newPlayer);
             socket.WritePacket(from, ConnectPacket{true});
             SendPlayerUpdate(from);
+            // Now tell everyone you're here
+            SendPlayerDataToAll(from);
             mNumClientsChangeCallback(GameplayGame().ConnectedPlayers());
           }
         }
@@ -86,16 +90,22 @@ namespace MORL {
             // Handle the movement and send back the new position
             player->Move(move.direction);
             SendPlayerUpdate(from);
+            SendPlayerDataToAll(from);
           }
         }
       }
     }
 
-    void StateGameplay::SendPlayerUpdate(IPEndpoint const &to) {
-      auto *player = GameplayGame().GetConnectedPlayer(to);
+    void StateGameplay::SendPlayerUpdate(IPEndpoint const &forPlayer, IPEndpoint const &to) {
+      auto *player = GameplayGame().GetConnectedPlayer(forPlayer);
       if(player) {
+        uint8_t isMe = (forPlayer == to ? 1 : 0);
+        auto iter = GameplayGame().ConnectedPlayers().find(forPlayer);
+        auto id = std::distance(GameplayGame().ConnectedPlayers().begin(), iter);
         // Handle the movement and send back the new position
         PlayerUpdatePacket update;
+        update.isMe = isMe;
+        update.playerId = static_cast<uint32_t>(id);
         auto const &pos = player->Position();
         update.newX = htonl(pos.X());
         update.newY = htonl(pos.Y());
@@ -103,6 +113,20 @@ namespace MORL {
         auto name = player->Name().substr(0, nameLength);
         memcpy(update.name, name.c_str(), nameLength + 1);
         Socket().WritePacket(to, update);
+      }
+    }
+
+    void StateGameplay::SendPlayerListing(IPEndpoint const &to) {
+      for(auto &player : GameplayGame().ConnectedPlayers()) {
+        SendPlayerUpdate(player.first, to);
+      }
+    }
+
+    void StateGameplay::SendPlayerDataToAll(IPEndpoint const &newPlayer) {
+      for(auto &player : GameplayGame().ConnectedPlayers()) {
+        if(player.first != newPlayer) {
+          SendPlayerUpdate(newPlayer, player.first);
+        }
       }
     }
 

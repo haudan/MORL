@@ -43,7 +43,14 @@ namespace MORL {
       #ifdef MORL_SERVER_SIDE
       void ServerUpdate();
 
-      void SendPlayerUpdate(IPEndpoint const &to);
+      void SendPlayerUpdate(IPEndpoint const &forPlayer, IPEndpoint const &to);
+      inline void SendPlayerUpdate(IPEndpoint const &to) {
+        SendPlayerUpdate(to, to);
+      }
+
+      void SendPlayerListing(IPEndpoint const &to);
+
+      void SendPlayerDataToAll(IPEndpoint const &newPlayer);
 
       inline Gameplay::Game &GameplayGame() {
         return mSession.Game().GameplayGame();

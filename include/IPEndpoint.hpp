@@ -40,6 +40,9 @@ public:
   operator sockaddr_in () const;
 
   bool operator == (IPEndpoint const &other) const;
+  inline bool operator != (IPEndpoint const &other) const {
+    return !((*this) == other);
+  }
 private:
   uint32_t mAddr = 0;
   uint16_t mPort = 0;

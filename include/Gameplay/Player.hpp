@@ -9,7 +9,7 @@ namespace MORL {
   namespace Gameplay {
     class Player {
     public:
-      Player() = delete;
+      Player() = default;
       Player(Player const &other) = default;
       Player(std::string const &name);
       Player(std::string const &name, Vec2i const &position);

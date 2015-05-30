@@ -1,7 +1,10 @@
 #pragma once
 
 #include "Gameplay/World.hpp"
+#include "Gameplay/Player.hpp"
 #include "FrameBuffer.hpp"
+
+#include "Network/Packets/PlayerUpdatePacket.hpp"
 
 namespace MORL {
   namespace Gameplay {
@@ -22,12 +25,29 @@ namespace MORL {
         return mWorld;
       }
 
+      #ifndef MORL_SERVER_SIDE
+      inline Player const *LocalPlayer() const {
+        return mLocalPlayer.get();
+      }
+
+      inline bool DoesLocalPlayerExist() {
+        return mLocalPlayer != nullptr;
+      }
+
+      void LocalPlayerUpdate(Network::PlayerUpdatePacket &updatePacket);
+      #endif
+
       void Update();
       void Draw();
       void DrawToTerminal(int maxWidth, int maxHeight);
     private:
       Gameplay::World mWorld;
       FrameBuffer mFrameBuffer{GameScreenWidth, GameScreenHeight};
+      #ifdef MORL_SERVER_SIDE
+      #else
+      // Self
+      std::unique_ptr<Player> mLocalPlayer;
+      #endif
     };
   }
 }

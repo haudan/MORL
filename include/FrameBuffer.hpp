@@ -52,10 +52,29 @@ namespace MORL {
     }
 
     /**
+     * Like CharAt, except this function checks for out of bounds.
+     *
+     * @param int x X position
+     * @param int y Y position
+     * @param CharT chr The character to write into the buffer at (x, y)
+     */
+    void SetCharAt(int x, int y, CharT chr);
+
+    /**
      * Set the entire buffer to the specific character
      * @param CharT chr What to set the buffer to
      */
     void Clear(CharT chr);
+
+    /**
+     * Draw text at the position (x, y)
+     *
+     * Does perform bounds checks
+     * @param int x X-Coord of the position
+     * @param int y Y-Coord of the position
+     * @param std::string const& text The text to draw
+     */
+    void Text(int x, int y, std::string const &text);
   private:
     int const mWidth = 0;
     int const mHeight = 0;

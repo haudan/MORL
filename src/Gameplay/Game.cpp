@@ -1,6 +1,9 @@
 #include <curses.h>
 
 #include "Gameplay/Game.hpp"
+#include "Gameplay/PlayerEntity.hpp"
+
+#include "platform_sockets.hpp"
 
 namespace MORL {
   namespace Gameplay {
@@ -9,7 +12,7 @@ namespace MORL {
     }
 
     void Game::Draw() {
-      mFrameBuffer.Clear('.');
+      mFrameBuffer.Clear(' ');
       mWorld.Draw(mFrameBuffer);
     }
 
@@ -20,5 +23,19 @@ namespace MORL {
         }
       }
     }
+
+    #ifndef MORL_SERVER_SIDE
+    void Game::LocalPlayerUpdate(Network::PlayerUpdatePacket &updatePacket) {
+      Vec2i newPos{int(ntohl(updatePacket.newX)), int(ntohl(updatePacket.newY))};
+
+      if(!mLocalPlayer) {
+        mLocalPlayer.reset(new Player{updatePacket.name, newPos});
+        mWorld.AddEntity<PlayerEntity>(*mLocalPlayer);
+      }
+      else {
+        mLocalPlayer->Position(newPos);
+      }
+    }
+    #endif
   }
 }

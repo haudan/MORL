@@ -36,7 +36,7 @@ namespace MORL {
       SetColor(TerminalColor::Important);
 
       for(auto const &client : *mClients) {
-        printw("%s\n", static_cast<std::string>(client).c_str());
+        printw("%s\n", static_cast<std::string>(client.first).c_str());
       }
     }
     else {

@@ -24,9 +24,9 @@ namespace MORL {
        * Add a new entity to the world
        * @return WorldEntity* A pointer to the new entity
        */
-      template <typename E>
-      inline WorldEntity *AddEntity(E const &entity) {
-        auto owned = MakeUnique<E>(entity);
+      template <typename E, typename ...Args>
+      inline WorldEntity *AddEntity(Args && ... args) {
+        auto owned = MakeUnique<E>(std::forward<Args>(args)...);
         mEntities.push_back(std::move(owned));
         return owned.get();
       }

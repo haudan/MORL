@@ -3,8 +3,11 @@
 #include <cstdint>
 #include <string>
 #include <memory>
+#include <functional>
 
 #include "platform_sockets.hpp"
+
+#include "Gameplay/Player.hpp"
 
 class IPEndpoint {
 public:
@@ -41,3 +44,20 @@ private:
   uint32_t mAddr = 0;
   uint16_t mPort = 0;
 };
+
+// WTF STL
+inline bool operator == (std::pair<IPEndpoint const&, MORL::Gameplay::Player> const &pair, IPEndpoint const &endpoint) {
+  return pair.first == endpoint;
+}
+
+// Hasher for IPEndpoint
+namespace std {
+  template <>
+  struct hash<IPEndpoint> {
+    size_t operator () (IPEndpoint const &endpoint) const {
+      size_t h1 = std::hash<uint32_t>()(endpoint.Address());
+      size_t h2 = std::hash<uint16_t>()(endpoint.Port());
+      return h1 ^ (h2 << 1);
+    }
+  };
+}

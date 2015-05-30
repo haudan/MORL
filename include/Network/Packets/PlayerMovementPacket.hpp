@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cstdint>
+
 namespace MORL {
   namespace Network {
     struct PlayerMovementPacket {

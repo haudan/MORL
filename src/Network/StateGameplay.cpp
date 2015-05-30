@@ -1,25 +1,9 @@
-#include <curses.h>
-
 #include "Network/StateGameplay.hpp"
 
-#include "Network/Session.hpp"
 #include "Network/Packets/ConnectPacket.hpp"
 #include "Network/Packets/DisconnectPacket.hpp"
 #include "Game.hpp"
-
-#include <algorithm>
-#include <sstream>
-
-std::string VecDump(std::vector<uint8_t> const &vec) {
-  std::stringstream ss;
-
-  ss << "uint_8 array of size " << vec.size() << ":\n";
-  for(size_t i = 0; i < vec.size(); ++i) {
-    ss << (unsigned)vec[i] << (i < vec.size() - 1 ? ", " : "");
-  }
-
-  return ss.str();
-}
+#include "Gameplay/PlayerEntity.hpp"
 
 namespace MORL {
   namespace Network {
@@ -51,7 +35,9 @@ namespace MORL {
 
     #ifdef MORL_SERVER_SIDE
     void StateGameplay::ServerUpdate() {
-      UdpSocket &socket = mSession.Socket();
+      using namespace Gameplay;
+
+      UdpSocket &socket = Socket();
 
       auto numBytes = socket.NumBytesAvailable();
       if(numBytes > 0) {
@@ -62,15 +48,18 @@ namespace MORL {
         if(socket.PacketAvailable<ConnectPacket>(result)) {
           ConnectPacket connect;
           socket.ReadPacket(result, connect, from);
-          auto iter = std::find(mConnectedClients.begin(), mConnectedClients.end(), from);
+          auto iter = mConnectedClients.find(from);
           if(iter != mConnectedClients.end()) {
             // Client is already connected, so we answer with false!
             socket.WritePacket(from, ConnectPacket{false});
           }
           else {
             // Client is new, so we accept!
-            mConnectedClients.push_back(from);
+            Player newPlayer{"SomeName"};
+            mConnectedClients.emplace(from, newPlayer);
+            mSession.Game().GameplayGame().World().AddEntity<PlayerEntity>(newPlayer);
             socket.WritePacket(from, ConnectPacket{true});
+            SendPlayerUpdate(from);
             mNumClientsChangeCallback(mConnectedClients);
           }
         }
@@ -81,17 +70,65 @@ namespace MORL {
           socket.ReadPacket(result, disconnect, from);
 
           // Remove the client from the list if he is on it
-          auto iter = std::find(mConnectedClients.begin(), mConnectedClients.end(), from);
+          auto iter = mConnectedClients.find(from);
           if(iter != mConnectedClients.end()) {
             mConnectedClients.erase(iter);
             mNumClientsChangeCallback(mConnectedClients);
           }
         }
+
+        // Handle player movement packet
+        else if(socket.PacketAvailable<PlayerMovementPacket>(result)) {
+          PlayerMovementPacket move;
+          socket.ReadPacket<PlayerMovementPacket>(result, move, from);
+          // Check if the packets source is a connected client
+          auto iter = mConnectedClients.find(from);
+          if(iter != mConnectedClients.end()) {
+            // Handle the movement and send back the new position
+            Player &player = iter->second;
+            player.Move(move.direction);
+            SendPlayerUpdate(from);
+          }
+        }
+      }
+    }
+
+    void StateGameplay::SendPlayerUpdate(IPEndpoint const &to) {
+      auto iter = mConnectedClients.find(to);
+      if(iter != mConnectedClients.end()) {
+        // Handle the movement and send back the new position
+        Gameplay::Player &player = iter->second;
+        PlayerUpdatePacket update;
+        auto const &pos = player.Position();
+        update.newX = htonl(pos.X());
+        update.newY = htonl(pos.Y());
+        auto nameLength = std::min(player.Name().size(), PlayerUpdateMaxNameLength);
+        auto name = player.Name().substr(0, nameLength);
+        memcpy(update.name, name.c_str(), nameLength + 1);
+        Socket().WritePacket(to, update);
       }
     }
 
     #else
     void StateGameplay::ClientUpdate() {
+      using namespace Gameplay;
+
+      // Handle received packets
+      UdpSocket &socket = mSession.Socket();
+      auto numBytes = socket.NumBytesAvailable();
+      if(numBytes > 0) {
+        auto const result = socket.ReadAll();
+        IPEndpoint from;
+
+        // Handle PlayerPositionUpdate packet
+        if(socket.PacketAvailable<PlayerUpdatePacket>(result)) {
+          PlayerUpdatePacket update;
+          socket.ReadPacket(result, update, from);
+          mSession.Game().GameplayGame().LocalPlayerUpdate(update);
+        }
+      }
+
+      // Handle local commands
       auto &clientCommands = mSession.Game().ClientCommands();
       while(!clientCommands.empty()) {
         auto &command = clientCommands.front();
